@@ -1,7 +1,48 @@
 import 'package:flutter/material.dart';
+import '../models/task.dart';
 
-class AddTaskScreen extends StatelessWidget {
-  const AddTaskScreen({super.key});
+class AddTaskScreen extends StatefulWidget {
+  final Function(Task) onTaskAdded;
+
+  const AddTaskScreen({super.key, required this.onTaskAdded});
+
+  @override
+  State<AddTaskScreen> createState() => _AddTaskScreenState();
+}
+
+class _AddTaskScreenState extends State<AddTaskScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _titleController = TextEditingController();
+  final _descriptionController = TextEditingController();
+
+  String _selectedCategory = 'Работа';
+  String _selectedPriority = 'Средний';
+
+  final List<String> _categories = ['Работа', 'Дом', 'Личное', 'Покупки'];
+  final List<String> _priorities = ['Высокий', 'Средний', 'Низкий'];
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  void _saveTask() {
+    if (_formKey.currentState!.validate()) {
+      final newTask = Task.fromForm(
+        title: _titleController.text.trim(),
+        category: _selectedCategory,
+        priority: _selectedPriority,
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+      );
+
+      widget.onTaskAdded(newTask);
+      Navigator.pop(context);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -10,126 +51,128 @@ class AddTaskScreen extends StatelessWidget {
         title: const Text('Новая задача'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            // Пока без навигации
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Поле названия
-            const Text(
-              'Название задачи',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              decoration: InputDecoration(
-                hintText: 'Введите название задачи',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Поле названия
+              const Text(
+                'Название задачи*',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-            ),
-            const SizedBox(height: 24),
-
-            // Выбор категории
-            const Text(
-              'Категория',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<String>(
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                hintText: 'Выберите категорию',
-              ),
-              items: const [
-                DropdownMenuItem(value: 'Работа', child: Text('Работа')),
-                DropdownMenuItem(value: 'Дом', child: Text('Дом')),
-                DropdownMenuItem(value: 'Личное', child: Text('Личное')),
-                DropdownMenuItem(value: 'Покупки', child: Text('Покупки')),
-              ],
-              onChanged: (value) {},
-            ),
-            const SizedBox(height: 24),
-
-            // Выбор приоритета
-            const Text(
-              'Приоритет',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: ChoiceChip(
-                    label: const Text('Высокий'),
-                    selected: true,
-                    onSelected: (selected) {},
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _titleController,
+                decoration: InputDecoration(
+                  hintText: 'Введите название задачи',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ChoiceChip(
-                    label: const Text('Средний'),
-                    selected: false,
-                    onSelected: (selected) {},
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ChoiceChip(
-                    label: const Text('Низкий'),
-                    selected: false,
-                    onSelected: (selected) {},
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Поле описания
-            const Text(
-              'Описание (необязательно)',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            TextFormField(
-              maxLines: 4,
-              decoration: InputDecoration(
-                hintText: 'Введите подробное описание задачи...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Введите название задачи';
+                  }
+                  return null;
+                },
               ),
-            ),
-            const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
-            // Кнопка сохранения
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.save),
-                label: const Text(
-                  'Сохранить задачу',
-                  style: TextStyle(fontSize: 18),
+              // Выбор категории
+              const Text(
+                'Категория*',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  hintText: 'Выберите категорию',
                 ),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
+                items: _categories
+                    .map(
+                      (category) => DropdownMenuItem(
+                        value: category,
+                        child: Text(category),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) =>
+                    setState(() => _selectedCategory = value!),
+              ),
+              const SizedBox(height: 24),
+
+              // Выбор приоритета
+              const Text(
+                'Приоритет*',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: _priorities.map((priority) {
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: ChoiceChip(
+                        label: Text(priority),
+                        selected: _selectedPriority == priority,
+                        onSelected: (selected) {
+                          setState(() => _selectedPriority = priority);
+                        },
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 24),
+
+              // Поле описания
+              const Text(
+                'Описание (необязательно)',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _descriptionController,
+                maxLines: 4,
+                decoration: InputDecoration(
+                  hintText: 'Введите подробное описание задачи...',
+                  border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 32),
+
+              // Кнопка сохранения
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _saveTask,
+                  icon: const Icon(Icons.save),
+                  label: const Text(
+                    'Сохранить задачу',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
+import '../data/task_repository.dart';
 
 class StatisticsScreen extends StatelessWidget {
-  const StatisticsScreen({super.key});
+  final TaskRepository taskRepository;
+
+  const StatisticsScreen({super.key, required this.taskRepository});
 
   @override
   Widget build(BuildContext context) {
+    final progress = taskRepository.getCategoryProgress();
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Статистика'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            //Поле навигации
-          },
-        ),
-      ),
+      appBar: AppBar(title: const Text('Статистика')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -38,9 +35,21 @@ class StatisticsScreen extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _buildStatItem('Всего задач', '24', Icons.list),
-                        _buildStatItem('Выполнено', '8', Icons.check_circle),
-                        _buildStatItem('Процент', '33%', Icons.percent),
+                        _buildStatItem(
+                          'Всего задач',
+                          taskRepository.totalTasks.toString(),
+                          Icons.list,
+                        ),
+                        _buildStatItem(
+                          'Выполнено',
+                          taskRepository.completedTasks.toString(),
+                          Icons.check_circle,
+                        ),
+                        _buildStatItem(
+                          'Процент',
+                          '${(taskRepository.completionPercentage * 100).toStringAsFixed(1)}%',
+                          Icons.percent,
+                        ),
                       ],
                     ),
                   ],
@@ -57,12 +66,14 @@ class StatisticsScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Expanded(
               child: ListView(
-                children: [
-                  _buildCategoryProgress('Работа', 0.6, Colors.blue),
-                  _buildCategoryProgress('Дом', 0.3, Colors.green),
-                  _buildCategoryProgress('Личное', 0.8, Colors.purple),
-                  _buildCategoryProgress('Покупки', 0.2, Colors.orange),
-                ],
+                children: progress.entries.map((entry) {
+                  return _buildCategoryProgress(
+                    entry.key,
+                    entry.value,
+                    _getCategoryColor(entry.key),
+                    taskRepository.getTasksByCategory(entry.key).length,
+                  );
+                }).toList(),
               ),
             ),
           ],
@@ -85,7 +96,12 @@ class StatisticsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryProgress(String category, double progress, Color color) {
+  Widget _buildCategoryProgress(
+    String category,
+    double progress,
+    Color color,
+    int taskCount,
+  ) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -106,7 +122,7 @@ class StatisticsScreen extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  '${(progress * 100).toInt()}%',
+                  '${(progress * 100).toStringAsFixed(0)}%',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -128,11 +144,11 @@ class StatisticsScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Выполнено: ${(progress * 10).toInt()}/10',
+                  'Задач: $taskCount',
                   style: const TextStyle(color: Colors.grey),
                 ),
                 Text(
-                  'Осталось: ${(10 - progress * 10).toInt()}',
+                  'Выполнено: ${(progress * taskCount).toInt()}',
                   style: const TextStyle(color: Colors.grey),
                 ),
               ],
@@ -141,6 +157,21 @@ class StatisticsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Color _getCategoryColor(String category) {
+    switch (category) {
+      case 'Работа':
+        return Colors.blue;
+      case 'Дом':
+        return Colors.green;
+      case 'Личное':
+        return Colors.purple;
+      case 'Покупки':
+        return Colors.orange;
+      default:
+        return Colors.grey;
+    }
   }
 
   IconData _getCategoryIconData(String category) {
