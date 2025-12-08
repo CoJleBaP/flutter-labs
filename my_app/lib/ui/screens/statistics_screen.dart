@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../data/task_repository.dart';
+import 'package:my_app/data/repositories/task_repository.dart';
 
 class StatisticsScreen extends StatelessWidget {
   final TaskRepository taskRepository;

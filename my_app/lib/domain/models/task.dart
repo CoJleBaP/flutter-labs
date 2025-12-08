@@ -15,7 +15,7 @@ class Task {
     this.isCompleted = false,
   });
 
-  // Метод для создания задачи из формы
+  // Конструктор из формы
   factory Task.fromForm({
     required String title,
     required String category,
@@ -28,6 +28,27 @@ class Task {
       category: category,
       priority: priority,
       description: description,
+    );
+  }
+
+  // JSON сериализация
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': title,
+    'category': category,
+    'priority': priority,
+    'description': description,
+    'isCompleted': isCompleted,
+  };
+
+  factory Task.fromJson(Map<String, dynamic> json) {
+    return Task(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      category: json['category'] as String,
+      priority: json['priority'] as String,
+      description: json['description'] as String?,
+      isCompleted: json['isCompleted'] as bool? ?? false,
     );
   }
 }

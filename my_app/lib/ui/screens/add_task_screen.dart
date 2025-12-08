@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
-import '../models/task.dart';
+import '../../domain/models/task.dart';
 
 class AddTaskScreen extends StatefulWidget {
   final Function(Task) onTaskAdded;
+  final String? initialCategory; // ← ДОБАВЛЕНО: начальная категория
 
-  const AddTaskScreen({super.key, required this.onTaskAdded});
+  const AddTaskScreen({
+    super.key,
+    required this.onTaskAdded,
+    this.initialCategory, // ← ДОБАВЛЕНО: optional параметр
+  });
 
   @override
   State<AddTaskScreen> createState() => _AddTaskScreenState();
@@ -20,6 +25,16 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
   final List<String> _categories = ['Работа', 'Дом', 'Личное', 'Покупки'];
   final List<String> _priorities = ['Высокий', 'Средний', 'Низкий'];
+
+  @override
+  void initState() {
+    super.initState();
+    // ← ДОБАВЛЕНО: Устанавливаем начальную категорию если передана
+    if (widget.initialCategory != null &&
+        _categories.contains(widget.initialCategory)) {
+      _selectedCategory = widget.initialCategory!;
+    }
+  }
 
   @override
   void dispose() {
